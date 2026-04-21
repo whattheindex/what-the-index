@@ -10,19 +10,43 @@ const SPARKLINE_MAX = 200;
 
 const DATA_DIR = join(process.cwd(), "public", "data");
 
+// Read a JSON file from public/data. On Cloudflare Workers there is no
+// filesystem, so dynamic requests (Home with searchParams, Markets) fall
+// through to the ASSETS service binding which serves the same files
+// in-process without a real network hop. Build-time prerender runs on
+// Node and uses readFile directly.
+async function readDataFile(filename: string): Promise<string | null> {
+  try {
+    const { getCloudflareContext } = await import("@opennextjs/cloudflare");
+    const ctx = await getCloudflareContext({ async: true });
+    const assets = ctx.env.ASSETS;
+    if (assets) {
+      const res = await assets.fetch(
+        new URL(`https://assets.local/data/${filename}`),
+      );
+      if (res.ok) return await res.text();
+      return null;
+    }
+  } catch {
+    // Not running on Cloudflare — fall through to Node fs.
+  }
+  try {
+    return await readFile(join(DATA_DIR, filename), "utf8");
+  } catch {
+    return null;
+  }
+}
+
 // Raw file loader — only reads from disk, never dispatches to derived.
 // Used internally by the derived-series compute functions so they can
 // pull their inputs without risking infinite recursion.
 async function loadRawAsset(
   symbol: string,
 ): Promise<{ points: PricePoint[] } | null> {
-  try {
-    const raw = await readFile(join(DATA_DIR, `${symbol}.json`), "utf8");
-    const parsed = JSON.parse(raw) as AssetSeries;
-    return { points: parsed.points };
-  } catch {
-    return null;
-  }
+  const raw = await readDataFile(`${symbol}.json`);
+  if (!raw) return null;
+  const parsed = JSON.parse(raw) as AssetSeries;
+  return { points: parsed.points };
 }
 
 export async function loadAsset(symbol: string): Promise<AssetSeries | null> {
@@ -39,21 +63,15 @@ export async function loadAsset(symbol: string): Promise<AssetSeries | null> {
       points,
     };
   }
-  try {
-    const raw = await readFile(join(DATA_DIR, `${symbol}.json`), "utf8");
-    return JSON.parse(raw) as AssetSeries;
-  } catch {
-    return null;
-  }
+  const raw = await readDataFile(`${symbol}.json`);
+  if (!raw) return null;
+  return JSON.parse(raw) as AssetSeries;
 }
 
 export async function loadCpi(): Promise<CpiSeries | null> {
-  try {
-    const raw = await readFile(join(DATA_DIR, "cpi-us.json"), "utf8");
-    return JSON.parse(raw) as CpiSeries;
-  } catch {
-    return null;
-  }
+  const raw = await readDataFile("cpi-us.json");
+  if (!raw) return null;
+  return JSON.parse(raw) as CpiSeries;
 }
 
 // Same shape as loadAsset but returns a sparkline-resolution series —
