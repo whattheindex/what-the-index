@@ -1,0 +1,26 @@
+// Cloudflare Workers config for OpenNext. CF's "Workers Builds" git
+// integration reads this file on every push and spins up a deploy.
+//
+// main/assets/compatibility_date are emitted by `opennextjs-cloudflare build`.
+// Don't hand-edit the generated .open-next/ directory.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "what-the-index",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-04-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "observability": {
+    "enabled": true
+  },
+  // Secrets live in the dashboard (wrangler secret put ...) — keeping the
+  // list here as documentation. Add NEXT_PUBLIC_SITE_URL etc. via plain
+  // vars since they need to be inlined at build time.
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://whattheindex.com"
+  }
+}

@@ -6,16 +6,19 @@ export function isLocale(x: string): x is Locale {
   return (LOCALES as readonly string[]).includes(x);
 }
 
-// Prefix the given pathname with a locale, except for the default locale which
-// is served without a prefix. Used by links in the UI so that switching locale
-// keeps the user on the equivalent page.
+// Prefix the given pathname with the locale. Every locale — including the
+// default — carries a visible `/<locale>` segment, which keeps the routing
+// fully static and avoids a server-side proxy rewrite (Next.js 16 + the
+// Cloudflare Workers adapter don't currently agree on middleware runtime).
+// The root `app/page.tsx` redirects `/` to `/${DEFAULT_LOCALE}` so visitors
+// typing the bare domain still land on the right page.
 export function localizedPath(locale: Locale, path: string): string {
   const clean = path.startsWith("/") ? path : `/${path}`;
-  if (locale === DEFAULT_LOCALE) return clean;
   return `/${locale}${clean === "/" ? "" : clean}`;
 }
 
-// Strip the locale prefix if present. Used when switching languages.
+// Strip any leading locale prefix, returning the "neutral" path. Used by
+// the language switch to compute the equivalent URL in another locale.
 export function stripLocale(path: string): string {
   for (const l of LOCALES) {
     if (path === `/${l}`) return "/";

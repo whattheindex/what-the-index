@@ -44,3 +44,7 @@ next-env.d.ts
 # Claude Code local session data — never commit
 .claude/
 
+# OpenNext / Cloudflare Workers build artifacts
+.open-next/
+.wrangler/
+
