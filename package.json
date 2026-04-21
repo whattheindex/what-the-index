@@ -8,9 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "ingest": "node scripts/ingest.mjs",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "cf:build": "opennextjs-cloudflare build"
+    "build:pulse": "node scripts/build-pulse.mjs",
+    "preview": "npm run build:pulse && opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "npm run build:pulse && opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "cf:build": "npm run build:pulse && opennextjs-cloudflare build"
   },
   "dependencies": {
     "clsx": "^2.1.1",

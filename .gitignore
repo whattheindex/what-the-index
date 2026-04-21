@@ -48,3 +48,7 @@ next-env.d.ts
 .open-next/
 .wrangler/
 
+# Prebuilt sparkline bundles — regenerated at build time by
+# scripts/build-pulse.mjs from public/data/*.json.
+/public/data/pulse/
+

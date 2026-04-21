@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { ASSETS } from "@/data/assets";
-import { loadAssetSparkline } from "@/lib/data-loader";
+import { loadPulse } from "@/lib/data-loader";
 import { HomePeriodSelector } from "@/components/HomePeriodSelector";
 import { MarketsBrowser } from "@/components/MarketsBrowser";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -34,18 +34,12 @@ export default async function MarketsPage({
   const timeframe = parseTf(tfRaw);
   const m = getMessages(locale as Locale);
 
-  // Markets grid: thinned to sparkline resolution for the selected
-  // timeframe. Roughly 20× smaller RSC payload than loading full daily
-  // histories, without distorting the timeframe-scoped change numbers.
-  const loaded = await Promise.all(
-    ASSETS.map(async (asset) => ({
-      asset,
-      series: await loadAssetSparkline(asset.symbol, timeframe),
-    })),
-  );
-  const available = loaded
-    .filter((x) => x.series && x.series.points.length > 0)
-    .map((x) => ({ asset: x.asset, points: x.series!.points }));
+  // Load the prebuilt timeframe bundle (one fetch, one parse). See the
+  // note in src/lib/data-loader.ts — same prebuild the Home page uses.
+  const pulse = (await loadPulse(timeframe)) ?? {};
+  const available = ASSETS
+    .map((asset) => ({ asset, points: pulse[asset.symbol]?.points ?? [] }))
+    .filter((x) => x.points.length > 0);
 
   const asOfIso =
     available

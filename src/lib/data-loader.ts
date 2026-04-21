@@ -76,10 +76,7 @@ export async function loadCpi(): Promise<CpiSeries | null> {
 
 // Same shape as loadAsset but returns a sparkline-resolution series —
 // filtered to the requested timeframe then subsampled to at most
-// SPARKLINE_MAX points. Listing pages (Home Pulse, Markets grid) should
-// prefer this: it keeps the RSC payload for the Markets page roughly an
-// order of magnitude smaller without lying about timeframe-scoped
-// statistics like percent change.
+// SPARKLINE_MAX points.
 //
 // Why per-timeframe: a single "ALL-history thinned to 200" dataset would
 // collapse the last year down to ~3 points on our 60-year daily series.
@@ -94,6 +91,21 @@ export async function loadAssetSparkline(
   if (!full) return null;
   const filtered = filterByTimeframe(full.points, timeframe);
   return { ...full, points: thin(filtered, SPARKLINE_MAX) };
+}
+
+// Batch sparkline loader for listing pages (Home Pulse, Markets grid).
+// Reads a single prebuilt bundle per timeframe (produced by
+// scripts/build-pulse.mjs) instead of fanning out to 31 individual
+// readDataFile calls and re-filtering at request time. Keeps the Worker
+// under the 50ms CPU ceiling on the free plan.
+export type PulseBundle = Record<string, { points: PricePoint[] }>;
+
+export async function loadPulse(
+  timeframe: Timeframe,
+): Promise<PulseBundle | null> {
+  const raw = await readDataFile(`pulse/${timeframe}.json`);
+  if (!raw) return null;
+  return JSON.parse(raw) as PulseBundle;
 }
 
 function thin(points: PricePoint[], max: number): PricePoint[] {
