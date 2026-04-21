@@ -1,26 +1,78 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Default = dark. Light is opt-in via html.light. A tiny inline script sets
+   the right class before hydration to avoid flashes. */
+:root,
+html.dark {
+  --background: #0a0a0b;
+  --background-card: #131316;
+  --background-hover: #1a1a1f;
+  --border: #26262c;
+  --border-strong: #3a3a42;
+  --foreground: #e8e8ea;
+  --foreground-muted: #8a8a93;
+  --foreground-dim: #5c5c64;
+  --accent: #7dd3fc;
+  --accent-fill-top: rgba(125, 211, 252, 0.25);
+  --accent-fill-bottom: rgba(125, 211, 252, 0.02);
+  --up: #22c55e;
+  --down: #ef4444;
+  --selection: rgba(125, 211, 252, 0.2);
+}
+
+html.light {
+  --background: #fafafa;
+  --background-card: #ffffff;
+  --background-hover: #f4f4f5;
+  --border: #e5e7eb;
+  --border-strong: #d4d4d8;
+  --foreground: #18181b;
+  --foreground-muted: #52525b;
+  --foreground-dim: #a1a1aa;
+  --accent: #0284c7;
+  --accent-fill-top: rgba(2, 132, 199, 0.2);
+  --accent-fill-bottom: rgba(2, 132, 199, 0.02);
+  --up: #15803d;
+  --down: #b91c1c;
+  --selection: rgba(2, 132, 199, 0.18);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-card: var(--background-card);
+  --color-card-hover: var(--background-hover);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-foreground: var(--foreground);
+  --color-muted: var(--foreground-muted);
+  --color-dim: var(--foreground-dim);
+  --color-accent: var(--accent);
+  --color-up: var(--up);
+  --color-down: var(--down);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+::selection {
+  background: var(--selection);
 }

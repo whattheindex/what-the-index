@@ -1,0 +1,55 @@
+name: Data ingest
+
+on:
+  # Run every day at 06:00 UTC — late enough to catch the previous US close
+  # from FRED's daily feeds, early enough that European visitors see fresh
+  # data for their morning.
+  schedule:
+    - cron: "0 6 * * *"
+  # Also allow manual runs from the Actions tab (useful after adding a new
+  # series or debugging a failing source).
+  workflow_dispatch:
+
+# We need contents:write so the job can commit refreshed JSON back to main.
+permissions:
+  contents: write
+
+# Cancel any queued run if a new one starts — we only ever want the latest.
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run ingest
+        run: npm run ingest
+        env:
+          # FRED and datahub.io are unauthenticated; no secrets needed today.
+          # Leaving this block as a parking spot for later (e.g. if we add
+          # Alpha Vantage or EOD Historical).
+          NODE_OPTIONS: "--no-warnings"
+
+      - name: Commit refreshed data
+        run: |
+          git config user.name "ingest-bot"
+          git config user.email "ingest-bot@users.noreply.github.com"
+          git add public/data
+          # Only commit + push if anything actually changed. Every run bumps
+          # the `fetchedAt` timestamp, so a "no diff" outcome only happens
+          # when every source failed — surface it in the log but don't fail
+          # the workflow, since partial refreshes are still useful.
+          if git diff --staged --quiet; then
+            echo "No data changes to commit."
+          else
+            git commit -m "data: daily refresh ($(date -u +%Y-%m-%d))"
+            git push
+          fi
