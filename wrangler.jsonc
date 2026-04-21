@@ -17,6 +17,12 @@
   "observability": {
     "enabled": true
   },
+  // Home + Markets fan out to 31 assets and JSON.parse several hundred KB
+  // of time-series each; the default 10ms CPU bucket can tip into 1102s
+  // on cold starts. 50ms is the free-plan ceiling.
+  "limits": {
+    "cpu_ms": 50
+  },
   // Secrets live in the dashboard (wrangler secret put ...) — keeping the
   // list here as documentation. Add NEXT_PUBLIC_SITE_URL etc. via plain
   // vars since they need to be inlined at build time.
