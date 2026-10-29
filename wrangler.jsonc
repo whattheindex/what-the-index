@@ -1,11 +1,12 @@
-// Cloudflare Workers config for OpenNext. CF's "Workers Builds" git
-// integration reads this file on every push and spins up a deploy.
+// Cloudflare Workers config for OpenNext, deployed into the LaCodea account
+// with `npm run deploy` (wrangler login in ~/.config/wrangler-lacodea).
 //
 // main/assets/compatibility_date are emitted by `opennextjs-cloudflare build`.
 // Don't hand-edit the generated .open-next/ directory.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "what-the-index",
+  "account_id": "bce226b7fabdb3fc98d2ef6b1f93b036",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-04-01",
   "compatibility_flags": ["nodejs_compat"],
@@ -17,10 +18,9 @@
   "observability": {
     "enabled": true
   },
-  // No "limits.cpu_ms": the account is on the Workers Free plan, which
-  // rejects CPU limits (API error 100328) and runs every request with its
-  // fixed 10ms. Precomputed pulse bundles and the edge cache in
-  // next.config.ts keep Home + Markets under that.
+  // No "limits.cpu_ms": the LaCodea account is on Workers Paid, where the
+  // default limit applies. Compare embeds all 31 series and needs a few
+  // hundred ms; the Free plan's fixed 10ms answered it with error 1102.
   // Secrets live in the dashboard (wrangler secret put ...) — keeping the
   // list here as documentation. Add NEXT_PUBLIC_SITE_URL etc. via plain
   // vars since they need to be inlined at build time.

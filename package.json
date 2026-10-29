@@ -10,8 +10,9 @@
     "ingest": "node scripts/ingest.mjs",
     "build:pulse": "node scripts/build-pulse.mjs",
     "preview": "npm run build:pulse && opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "npm run build:pulse && opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "cf:build": "npm run build:pulse && opennextjs-cloudflare build"
+    "deploy": "npm run build:pulse && env -u CLOUDFLARE_API_TOKEN -u CF_API_TOKEN -u CLOUDFLARE_ACCOUNT_ID -u CF_ACCOUNT_ID XDG_CONFIG_HOME=$HOME/.config/wrangler-lacodea opennextjs-cloudflare build && env -u CLOUDFLARE_API_TOKEN -u CF_API_TOKEN -u CLOUDFLARE_ACCOUNT_ID -u CF_ACCOUNT_ID XDG_CONFIG_HOME=$HOME/.config/wrangler-lacodea opennextjs-cloudflare deploy",
+    "cf:build": "npm run build:pulse && opennextjs-cloudflare build",
+    "wrangler": "env -u CLOUDFLARE_API_TOKEN -u CF_API_TOKEN -u CLOUDFLARE_ACCOUNT_ID -u CF_ACCOUNT_ID XDG_CONFIG_HOME=$HOME/.config/wrangler-lacodea wrangler"
   },
   "dependencies": {
     "clsx": "^2.1.1",
