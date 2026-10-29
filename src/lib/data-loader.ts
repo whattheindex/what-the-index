@@ -15,10 +15,15 @@ const DATA_DIR = join(process.cwd(), "public", "data");
 // through to the ASSETS service binding which serves the same files
 // in-process without a real network hop. Build-time prerender runs on
 // Node and uses readFile directly.
+//
+// Sync mode on purpose: it returns the Worker's context and throws during
+// prerendering. The async mode would hand the build a wrangler platform
+// proxy whose ASSETS has no data yet (404), which prerendered every asset
+// page as "not found".
 async function readDataFile(filename: string): Promise<string | null> {
   try {
     const { getCloudflareContext } = await import("@opennextjs/cloudflare");
-    const ctx = await getCloudflareContext({ async: true });
+    const ctx = getCloudflareContext();
     const assets = ctx.env.ASSETS;
     if (assets) {
       const res = await assets.fetch(
